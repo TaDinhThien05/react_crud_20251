@@ -1,11 +1,11 @@
 import React from "react";
 
-export default function SearchForm({ onChangeValue }) {
+export default function QueryInput({ handleSearch }) {
   return (
     <input
       type="text"
-      placeholder="🔍 Tìm theo name hoặc username..."
-      onChange={(e) => onChangeValue(e.target.value)}
+      placeholder="� Nhập tên hoặc username để tìm kiếm..."
+      onChange={(e) => handleSearch(e.target.value)}
       className="search-input"
     />
   );

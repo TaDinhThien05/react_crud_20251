@@ -1,101 +1,103 @@
 import React, { useState, useEffect } from "react";
 
-export default function ResultTable({ keyword, user, onAdded }) {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(null);
+export default function UserDataGrid({ searchTerm, newUser, onUserAdded }) {
+  const [userData, setUserData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/users")
       .then((res) => res.json())
       .then((data) => {
-        setUsers(data);
-        setLoading(false);
+        setUserData(data);
+        setIsLoading(false);
       });
   }, []);
 
   useEffect(() => {
-    if (user) {
-      setUsers((prev) => [...prev, { ...user, id: prev.length + 1 }]);
-      onAdded();
+    if (newUser) {
+      setUserData((prev) => [...prev, { ...newUser, id: prev.length + 1 }]);
+      onUserAdded();
     }
-  }, [user]);
+  }, [newUser]);
 
-  const editUser = (u) => setEditing({ ...u, address: { ...u.address } });
-  const handleEditChange = (field, value) =>
-    setEditing((prev) => ({ ...prev, [field]: value }));
+  const startEditing = (user) => setEditingUser({ ...user, address: { ...user.address } });
+  const updateEditForm = (field, value) =>
+    setEditingUser((prev) => ({ ...prev, [field]: value }));
 
-  const saveUser = () => {
-    setUsers((prev) => prev.map((u) => (u.id === editing.id ? editing : u)));
-    setEditing(null);
+  const saveChanges = () => {
+    setUserData((prev) => prev.map((user) => (user.id === editingUser.id ? editingUser : user)));
+    setEditingUser(null);
   };
 
-  const removeUser = (id) =>
-    setUsers((prev) => prev.filter((u) => u.id !== id));
+  const deleteUser = (id) =>
+    setUserData((prev) => prev.filter((user) => user.id !== id));
 
-  const filtered = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(keyword.toLowerCase()) ||
-      u.username.toLowerCase().includes(keyword.toLowerCase())
+  const filteredUsers = userData.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <p>Đang tải dữ liệu...</p>;
+  if (isLoading) return <p>⌛ Đang tải thông tin người dùng...</p>;
 
   return (
     <table className="result-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Username</th>
+          <th>Mã số</th>
+          <th>Họ và tên</th>
+          <th>Tên đăng nhập</th>
           <th>Email</th>
-          <th>City</th>
-          <th>Hành động</th>
+          <th>Thành phố</th>
+          <th>Tùy chọn</th>
         </tr>
       </thead>
       <tbody>
-        {filtered.map((u) => (
-          <tr key={u.id}>
-            <td>{u.id}</td>
-            <td>{u.name}</td>
-            <td>{u.username}</td>
-            <td>{u.email}</td>
-            <td>{u.address.city}</td>
+        {filteredUsers.map((user) => (
+          <tr key={user.id}>
+            <td>{user.id}</td>
+            <td>{user.name}</td>
+            <td>{user.username}</td>
+            <td>{user.email}</td>
+            <td>{user.address.city}</td>
             <td>
-              <button className="btn edit" onClick={() => editUser(u)}>
-                Sửa
+              <button className="btn edit" onClick={() => startEditing(user)}>
+                ✎ Sửa
               </button>
-              <button className="btn delete" onClick={() => removeUser(u.id)}>
-                Xóa
+              <button className="btn delete" onClick={() => deleteUser(user.id)}>
+                🗑 Xóa
               </button>
             </td>
           </tr>
         ))}
       </tbody>
 
-      {editing && (
+      {editingUser && (
         <tfoot>
           <tr>
             <td colSpan="6">
               <div className="edit-form">
-                <h4>Sửa người dùng #{editing.id}</h4>
+                <h4>✏️ Chỉnh sửa thông tin người dùng #{editingUser.id}</h4>
                 <input
-                  value={editing.name}
-                  onChange={(e) => handleEditChange("name", e.target.value)}
+                  value={editingUser.name}
+                  onChange={(e) => updateEditForm("name", e.target.value)}
+                  placeholder="Họ và tên"
                 />
                 <input
-                  value={editing.username}
-                  onChange={(e) => handleEditChange("username", e.target.value)}
+                  value={editingUser.username}
+                  onChange={(e) => updateEditForm("username", e.target.value)}
+                  placeholder="Tên đăng nhập"
                 />
                 <div className="modal-actions">
-                  <button className="btn save" onClick={saveUser}>
-                    Lưu
+                  <button className="btn save" onClick={saveChanges}>
+                    ✓ Lưu thay đổi
                   </button>
                   <button
                     className="btn cancel"
-                    onClick={() => setEditing(null)}
+                    onClick={() => setEditingUser(null)}
                   >
-                    Hủy
+                    ✕ Hủy bỏ
                   </button>
                 </div>
               </div>
